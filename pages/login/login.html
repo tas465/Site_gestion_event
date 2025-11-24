@@ -497,141 +497,157 @@
     </div>
 
     <script>
-        function showForm(formType) {
-            const loginForm = document.getElementById('loginForm');
-            const registerForm = document.getElementById('registerForm');
-            const tabs = document.querySelectorAll('.tab-btn');
-            const logoSubtext = document.getElementById('logoSubtext');
+    // Fonction pour afficher et masquer les formulaires
+    function showForm(formType) {
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const tabs = document.querySelectorAll('.tab-btn');
+        const logoSubtext = document.getElementById('logoSubtext');
 
-            // Remove active class from all tabs
-            tabs.forEach(tab => tab.classList.remove('active'));
+        // Retirer la classe active de tous les onglets
+        tabs.forEach(tab => tab.classList.remove('active'));
 
-            if (formType === 'login') {
-                loginForm.classList.add('active');
-                registerForm.classList.remove('active');
-                tabs[0].classList.add('active');
-                logoSubtext.textContent = 'Bienvenue ! Connectez-vous à votre compte';
+        if (formType === 'login') {
+            loginForm.classList.add('active');
+            registerForm.classList.remove('active');
+            tabs[0].classList.add('active');
+            logoSubtext.textContent = 'Bienvenue ! Connectez-vous à votre compte';
+        } else {
+            registerForm.classList.add('active');
+            loginForm.classList.remove('active');
+            tabs[1].classList.add('active');
+            logoSubtext.textContent = 'Créez votre compte pour commencer';
+        }
+    }
+
+    // Vérification de la force du mot de passe
+    const passwordInput = document.getElementById('registerPassword');
+    const strengthBar = document.getElementById('strengthBar');
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            let strength = 0;
+
+            if (password.length >= 8) strength++;
+            if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+            if (password.match(/[0-9]/)) strength++;
+            if (password.match(/[^a-zA-Z0-9]/)) strength++;
+
+            strengthBar.className = 'password-strength-bar';
+            if (strength <= 1) {
+                strengthBar.classList.add('strength-weak');
+            } else if (strength <= 2) {
+                strengthBar.classList.add('strength-medium');
             } else {
-                registerForm.classList.add('active');
-                loginForm.classList.remove('active');
-                tabs[1].classList.add('active');
-                logoSubtext.textContent = 'Créez votre compte pour commencer';
+                strengthBar.classList.add('strength-strong');
             }
+        });
+    }
+
+    // Fonction de connexion
+    function handleLogin(e) {
+        e.preventDefault();
+        
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
+        fetch('http://localhost:3000/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Réponse du serveur:', data);  
+            if (data.success) {
+                localStorage.setItem('authToken', data.data.token);
+                localStorage.setItem('userData', JSON.stringify(data.data.user));
+
+            window.location.href = '../dashboard/dashboard.html';
+            } else {
+                alert('Erreur: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de la connexion:', error);
+            alert('Une erreur est survenue, veuillez réessayer.');
+        });
+    }
+
+    // Fonction pour afficher le profil utilisateur après la connexion
+    // function showUserProfile() {
+    //     const userData = JSON.parse(localStorage.getItem('userData'));
+    //     if (userData) {
+    //         document.getElementById('userName').textContent = userData.firstName + ' ' + userData.lastName;
+    //         document.getElementById('userEmail').textContent = userData.email;
+    //         document.getElementById('userPhone').textContent = userData.phone;
+    //         document.getElementById('userSchool').textContent = userData.school;
+    //     }
+    // }
+
+    // Fonction pour s'inscrire
+    function handleRegister(e) {
+        e.preventDefault();
+        
+        let isValid = true;
+        const formGroups = document.querySelectorAll('#registerForm .form-group');
+        
+        // Réinitialiser les erreurs
+        formGroups.forEach(group => group.classList.remove('error'));
+
+        // Récupérer les valeurs du formulaire
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName = document.getElementById('lastName').value.trim();
+        const email = document.getElementById('registerEmail').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const school = document.getElementById('school').value.trim();
+        const password = document.getElementById('registerPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        const terms = document.getElementById('terms').checked;
+
+        // Validation des champs
+        if (!firstName) {
+            document.getElementById('firstName').parentElement.classList.add('error');
+            isValid = false;
         }
 
-        const passwordInput = document.getElementById('registerPassword');
-        const strengthBar = document.getElementById('strengthBar');
-
-        if (passwordInput) {
-            passwordInput.addEventListener('input', function() {
-                const password = this.value;
-                let strength = 0;
-
-                if (password.length >= 8) strength++;
-                if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
-                if (password.match(/[0-9]/)) strength++;
-                if (password.match(/[^a-zA-Z0-9]/)) strength++;
-
-                strengthBar.className = 'password-strength-bar';
-                if (strength <= 1) {
-                    strengthBar.classList.add('strength-weak');
-                } else if (strength <= 2) {
-                    strengthBar.classList.add('strength-medium');
-                } else {
-                    strengthBar.classList.add('strength-strong');
-                }
-            });
+        if (!lastName) {
+            document.getElementById('lastName').parentElement.classList.add('error');
+            isValid = false;
         }
 
-        function handleLogin(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-
-            fetch('http://localhost:3000/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Réponse du serveur:', data);  // Log de la réponse du serveur
-                if (data.success) {
-                    alert('Connexion réussie ! 🎉');
-                } else {
-                    alert('Erreur: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Erreur lors de la connexion:', error);
-                alert('Une erreur est survenue, veuillez réessayer.');
-            });
+        if (!email || !email.includes('@')) {
+            document.getElementById('registerEmail').parentElement.classList.add('error');
+            isValid = false;
         }
 
-        function handleRegister(e) {
-            e.preventDefault();
-            
-            let isValid = true;
-            const formGroups = document.querySelectorAll('#registerForm .form-group');
-            
-            // Reset errors
-            formGroups.forEach(group => group.classList.remove('error'));
+        if (!phone) {
+            document.getElementById('phone').parentElement.classList.add('error');
+            isValid = false;
+        }
 
-            // Get values
-            const firstName = document.getElementById('firstName').value.trim();
-            const lastName = document.getElementById('lastName').value.trim();
-            const email = document.getElementById('registerEmail').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            const school = document.getElementById('school').value.trim();
-            const password = document.getElementById('registerPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const terms = document.getElementById('terms').checked;
+        if (!school) {
+            document.getElementById('school').parentElement.classList.add('error');
+            isValid = false;
+        }
 
-            // Validations
-            if (!firstName) {
-                document.getElementById('firstName').parentElement.classList.add('error');
-                isValid = false;
-            }
+        if (password.length < 8) {
+            document.getElementById('registerPassword').parentElement.classList.add('error');
+            isValid = false;
+        }
 
-            if (!lastName) {
-                document.getElementById('lastName').parentElement.classList.add('error');
-                isValid = false;
-            }
+        if (password !== confirmPassword) {
+            document.getElementById('confirmPassword').parentElement.classList.add('error');
+            isValid = false;
+        }
 
-            if (!email || !email.includes('@')) {
-                document.getElementById('registerEmail').parentElement.classList.add('error');
-                isValid = false;
-            }
+        if (!terms) {
+            alert('Veuillez accepter les conditions d\'utilisation');
+            isValid = false;
+        }
 
-            if (!phone) {
-                document.getElementById('phone').parentElement.classList.add('error');
-                isValid = false;
-            }
-
-            if (!school) {
-                document.getElementById('school').parentElement.classList.add('error');
-                isValid = false;
-            }
-
-            if (password.length < 8) {
-                document.getElementById('registerPassword').parentElement.classList.add('error');
-                isValid = false;
-            }
-
-            if (password !== confirmPassword) {
-                document.getElementById('confirmPassword').parentElement.classList.add('error');
-                isValid = false;
-            }
-
-            if (!terms) {
-                alert('Veuillez accepter les conditions d\'utilisation');
-                isValid = false;
-            }
-
-            if (isValid) {
-
-                const response = fetch('http://localhost:3000/api/auth/register', {
+        if (isValid) {
+            const response = fetch('http://localhost:3000/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -644,17 +660,31 @@
                 })
             });
 
-                console.log('Inscription avec:', { firstName, lastName, email, phone, school });
-                alert('Inscription réussie ! 🎉\nBienvenue sur EventPro !');
-                e.target.reset();
-                strengthBar.className = 'password-strength-bar';
-            }
+            console.log('Inscription avec:', { firstName, lastName, email, phone, school });
+            alert('Inscription réussie ! 🎉\nBienvenue sur EventPro !');
+            e.target.reset();
+            strengthBar.className = 'password-strength-bar';
         }
+    }
 
-        // Social authentication
-        function socialAuth(platform) {
-            alert(`Connexion avec ${platform}`);
-        }
-    </script>
+    function handleLogout() {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userData');
+
+        alert('Vous êtes maintenant déconnecté.');
+        window.location.reload(); 
+    }
+
+    // window.onload = function() {
+    //     const token = localStorage.getItem('authToken');
+    //     if (token) {
+    //         showUserProfile();
+    //     } else {
+    //         alert('Veuillez vous connecter pour accéder au profil.');
+    //     }
+    // }
+
+</script>
+
 </body>
 </html>

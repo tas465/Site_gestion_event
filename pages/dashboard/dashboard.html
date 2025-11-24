@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <title>Dashboard - EventPro</title>
     <style>
         * {
@@ -528,8 +530,8 @@
             <div class="user-info">
                 <div class="user-avatar">JD</div>
                 <div class="user-details">
-                    <h4>Jean Dupont</h4>
-                    <p>Organisateur</p>
+                    <h4 id="userName">Jean Dupont</h4> <!-- Le nom sera remplacé dynamiquement -->
+                    <p id="userRole">Organisateur</p> <!-- Le rôle sera également remplacé dynamiquement -->
                 </div>
                 <div class="user-dropdown">
                     <div class="dropdown-item" onclick="goToProfile()">
@@ -717,6 +719,30 @@
     </main>
 
     <script>
+        function updateUserInfo() {
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        console.log(userData)
+        if (userData) {
+                const userNameElement = document.getElementById('userName');
+                const userRoleElement = document.getElementById('userRole');
+                const userAvatarElement = document.querySelector('.user-avatar');
+
+                userNameElement.textContent = `${userData.firstName} ${userData.lastName}`;
+                
+                userRoleElement.textContent = userData.role.charAt(0).toUpperCase() + userData.role.slice(1);
+                
+                const initials = userData.firstName.charAt(0) + userData.lastName.charAt(0);
+                userAvatarElement.textContent = initials.toUpperCase();
+            }
+        }
+
+        if (localStorage.getItem("authToken") == null) {
+            console.log("tst", localStorage.getItem("authToken"))
+            logout()
+        
+        } else {
+            updateUserInfo()
+        }
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('active');
@@ -731,13 +757,12 @@
         }
 
         function logout() {
-            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-                alert('Déconnexion...');
-                // Redirection vers page de connexion
-            }
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userData');
+
+            window.location.href = '../login/login.html';
         }
 
-        // Close sidebar on mobile when clicking outside
         document.addEventListener('click', function(event) {
             const sidebar = document.getElementById('sidebar');
             const menuToggle = document.querySelector('.menu-toggle');
