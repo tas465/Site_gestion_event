@@ -1,0 +1,5 @@
+JWT_SECRET=4c03abc78244a1e8691a3f8121f04ca8
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=eventhub
