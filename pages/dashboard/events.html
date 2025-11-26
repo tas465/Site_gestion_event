@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Événements - EventPro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #212529;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(139, 92, 246, 0.2);
+            padding: 2rem 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 0 1.5rem 2rem;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.3rem;
+        }
+
+        .logo p {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        .nav-menu {
+            margin-top: 2rem;
+            padding: 0 1rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.2rem;
+            margin-bottom: 0.5rem;
+            border-radius: 12px;
+            color: #495057;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .nav-item-icon {
+            font-size: 1.3rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: rgba(139, 92, 246, 0.1);
+            margin: 1.5rem 1rem;
+        }
+
+        .nav-section-title {
+            padding: 0 1.2rem;
+            color: #6c757d;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .header-title h2 {
+            font-size: 1.8rem;
+            color: #212529;
+            margin-bottom: 0.3rem;
+        }
+
+        .header-title p {
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn-create {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            color: #fff;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-create:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Filters */
+        .filters-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .filter-input, .filter-select {
+            padding: 0.8rem;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .filter-input:focus, .filter-select:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        /* Events Grid */
+        .events-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .event-card {
+            background: #fff;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.15);
+        }
+
+        .event-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            position: relative;
+        }
+
+        .event-category-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #8b5cf6;
+        }
+
+        .event-content {
+            padding: 1.3rem;
+        }
+
+        .event-date {
+            display: inline-block;
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+        }
+
+        .event-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-description {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #fff;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #212529;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6c757d;
+            transition: all 0.3s;
+        }
+
+        .btn-close:hover {
+            color: #212529;
+            transform: rotate(90deg);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            color: #495057;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .btn-cancel {
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            background: #fff;
+            color: #495057;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-cancel:hover {
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .btn-submit {
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            color: #fff;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Mobile Menu Toggle */
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            z-index: 1001;
+            background: #fff;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            font-size: 1.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 5rem 1.5rem 1.5rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .events-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="menu-toggle" onclick="toggleSidebar()">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <h1>EventPro</h1>
+                <p>Gestion d'événements</p>
+            </div>
+        </div>
+
+        <div class="nav-menu">
+            <a href="../dashboard/dashboard.html" class="nav-item">
+                <span class="nav-item-icon"><i class="fa-solid fa-chart-column"></i></span>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item active">
+                <span class="nav-item-icon"><i class="fa-solid fa-calendar-days"></i></span>
+                <span>Événements</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-item-icon"><i class="fa-solid fa-calendar"></i></span>
+                <span>Mes événements</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-item-icon"><i class="fa-solid fa-user"></i></span>
+                <span>Mon profil</span>
+            </a>
+
+            <div class="nav-divider"></div>
+            <div class="nav-section-title">Organisateur</div>
+
+            <a href="#" class="nav-item" onclick="openCreateModal(); return false;">
+                <span class="nav-item-icon"><i class="fa-solid fa-plus"></i></span>
+                <span>Créer un événement</span>
+            </a>
+
+            <div class="nav-divider"></div>
+            <div class="nav-section-title">Administration</div>
+
+            <a href="#" class="nav-item">
+                <span class="nav-item-icon"><i class="fa-solid fa-users"></i></span>
+                <span>Tous les utilisateurs</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-item-icon"><i class="fa-solid fa-note"></i></span>
+                <span>Logs</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-title">
+                <h2>Tous les événements</h2>
+                <p>Découvrez et gérez tous les événements disponibles</p>
+            </div>
+            <div class="header-actions" id="organizerActions" style="display: none;">
+                <button class="btn-create" onclick="openCreateModal()">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Créer un événement</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label>Rechercher</label>
+                    <input type="text" class="filter-input" placeholder="Nom de l'événement..." id="searchInput">
+                </div>
+                <div class="filter-group">
+                    <label>Catégorie</label>
+                    <select class="filter-select" id="categoryFilter">
+                        <option value="">Toutes les catégories</option>
+                        <option value="Ateliers">Ateliers</option>
+                        <option value="Conférences">Conférences</option>
+                        <option value="Soirées">Soirées</option>
+                        <option value="Hackathons">Hackathons</option>
+                        <option value="Séminaires">Séminaires</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Date</label>
+                    <input type="date" class="filter-input" id="dateFilter">
+                </div>
+            </div>
+        </div>
+
+        <!-- Events Container -->
+        <div class="events-container">
+            <div class="events-grid" id="eventsGrid">
+                <!-- Events will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Create Event Modal -->
+    <div class="modal" id="createModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Créer un événement</h3>
+                <button class="btn-close" onclick="closeCreateModal()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div id="createEventForm">
+                <div class="form-group">
+                    <label class="form-label">Nom de l'événement *</label>
+                    <input type="text" class="form-input" id="eventName" placeholder="Ex: Conférence Tech 2024" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description *</label>
+                    <textarea class="form-textarea" id="eventDescription" placeholder="Décrivez votre événement..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Date et heure *</label>
+                    <input type="datetime-local" class="form-input" id="eventDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Catégorie *</label>
+                    <select class="form-select" id="eventCategory" required>
+                        <option value="">Sélectionnez une catégorie</option>
+                        <option value="Ateliers">Ateliers - Formations pratiques et sessions hands-on</option>
+                        <option value="Conférences">Conférences - Présentations et talks inspirants</option>
+                        <option value="Soirées">Soirées - Événements festifs et networking</option>
+                        <option value="Hackathons">Hackathons - Compétitions de programmation 24h</option>
+                        <option value="Séminaires">Séminaires - Sessions d'apprentissage approfondies</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">URL de l'image</label>
+                    <input type="url" class="form-input" id="eventImage" placeholder="https://exemple.com/image.jpg">
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeCreateModal()">Annuler</button>
+                    <button type="button" class="btn-submit" onclick="createNewEvent()">Créer l'événement</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration API
+        const API_URL = 'http://localhost:3000/api';
+        let events = [];
+
+        // Get auth token
+        function getAuthToken() {
+            return localStorage.getItem('authToken');
+        }
+
+        // Check user role
+        function checkUserRole() {
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            if (userData && userData.role === 'organisateur') {
+                document.getElementById('organizerActions').style.display = 'flex';
+            }
+        }
+
+        // Load events from API
+        async function loadEvents() {
+            try {
+                const params = new URLSearchParams();
+                const category = document.getElementById('categoryFilter').value;
+                const date = document.getElementById('dateFilter').value;
+                const search = document.getElementById('searchInput').value;
+
+                if (category) params.append('category', category);
+                if (date) params.append('date', date);
+                if (search) params.append('search', search);
+
+                const response = await fetch(`${API_URL}/events?${params}`);
+                
+                if (!response.ok) {
+                    throw new Error('Erreur lors du chargement des événements');
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    events = data.events;
+                    displayEvents(events);
+                } else {
+                    throw new Error(data.error || 'Erreur inconnue');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('eventsGrid').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <h3>Erreur de chargement</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const options = { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return date.toLocaleDateString('fr-FR', options);
+        }
+
+        // Get category icon
+        function getCategoryIcon(category) {
+            const icons = {
+                'Ateliers': 'fa-hands',
+                'Conférences': 'fa-microphone',
+                'Soirées': 'fa-champagne-glasses',
+                'Hackathons': 'fa-code',
+                'Séminaires': 'fa-book-open'
+            };
+            return icons[category] || 'fa-calendar';
+        }
+
+        // Display events
+        function displayEvents(eventsToDisplay = events) {
+            const eventsGrid = document.getElementById('eventsGrid');
+            
+            if (eventsToDisplay.length === 0) {
+                eventsGrid.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-calendar-xmark"></i>
+                        <h3>Aucun événement trouvé</h3>
+                        <p>Essayez de modifier vos filtres de recherche</p>
+                    </div>
+                `;
+                return;
+            }
+
+            eventsGrid.innerHTML = eventsToDisplay.map(event => {
+                // Escape HTML to prevent XSS
+                const safeName = escapeHtml(event.name);
+                const safeDescription = escapeHtml(event.description);
+                const safeCategory = escapeHtml(event.category);
+                
+                return `
+                    <div class="event-card">
+                        <div class="event-image" style="${event.image ? `background-image: url('${escapeHtml(event.image)}'); background-size: cover; background-position: center;` : ''}">
+                            ${!event.image ? `<i class="fa-solid ${getCategoryIcon(event.category)}"></i>` : ''}
+                            <span class="event-category-badge">${safeCategory}</span>
+                        </div>
+                        <div class="event-content">
+                            <span class="event-date">
+                                <i class="fa-solid fa-calendar"></i> ${formatDate(event.date)}
+                            </span>
+                            <h4 class="event-title">${safeName}</h4>
+                            <p class="event-description">${safeDescription}</p>
+                            ${event.organizer ? `<p style="color: #8b5cf6; font-size: 0.85rem; margin-top: 0.5rem;">
+                                <i class="fa-solid fa-user"></i> Par ${escapeHtml(event.organizer.name)}
+                            </p>` : ''}
+                            ${event.participantCount !== undefined ? `<p style="color: #6c757d; font-size: 0.85rem; margin-top: 0.3rem;">
+                                <i class="fa-solid fa-users"></i> ${event.participantCount} participant${event.participantCount > 1 ? 's' : ''}
+                            </p>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Escape HTML to prevent XSS attacks
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return String(text).replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Filter events (now loads from API)
+        function filterEvents() {
+            loadEvents(); // Reload from API with filters
+        }
+
+        // Modal functions
+        function openCreateModal() {
+            document.getElementById('createModal').classList.add('active');
+        }
+
+        function closeCreateModal() {
+            document.getElementById('createModal').classList.remove('active');
+            // Reset form
+            document.getElementById('eventName').value = '';
+            document.getElementById('eventDescription').value = '';
+            document.getElementById('eventDate').value = '';
+            document.getElementById('eventCategory').value = '';
+            document.getElementById('eventImage').value = '';
+        }
+
+        // Create event
+        async function createNewEvent() {
+            const name = document.getElementById('eventName').value.trim();
+            const description = document.getElementById('eventDescription').value.trim();
+            const date = document.getElementById('eventDate').value;
+            const category = document.getElementById('eventCategory').value;
+            const image = document.getElementById('eventImage').value.trim();
+
+            if (!name || !description || !date || !category) {
+                alert('Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+
+            // Validation côté client
+            if (name.length > 255) {
+                alert('Le nom de l\'événement est trop long (max 255 caractères)');
+                return;
+            }
+
+            const eventDate = new Date(date);
+            if (eventDate < new Date()) {
+                alert('La date de l\'événement doit être dans le futur');
+                return;
+            }
+
+            if (image && !isValidUrl(image)) {
+                alert('L\'URL de l\'image n\'est pas valide');
+                return;
+            }
+
+            try {
+                const token = getAuthToken();
+                if (!token) {
+                    alert('Vous devez être connecté pour créer un événement');
+                    window.location.href = '../login/login.html';
+                    return;
+                }
+
+                const newEvent = {
+                    name,
+                    description,
+                    date,
+                    category,
+                    image: image || null
+                };
+
+                const response = await fetch(`${API_URL}/events/createevent`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(newEvent)
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    alert('Événement créé avec succès!');
+                    closeCreateModal();
+                    loadEvents(); // Recharger la liste
+                } else {
+                    throw new Error(data.error || 'Erreur lors de la création');
+                }
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la création de l\'événement: ' + error.message);
+            }
+        }
+
+        // Validate URL
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        // Sidebar toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('active');
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', debounce(filterEvents, 500));
+        document.getElementById('categoryFilter').addEventListener('change', filterEvents);
+        document.getElementById('dateFilter').addEventListener('change', filterEvents);
+
+        // Debounce function for search
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Close sidebar on outside click (mobile)
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.querySelector('.menu-toggle');
+            
+            if (window.innerWidth <= 1024) {
+                if (!sidebar.contains(event.target) && !menuToggle.contains(event.target)) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+
+        // Close modal on outside click
+        document.getElementById('createModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeCreateModal();
+            }
+        });
+
+        // Initialize
+        checkUserRole();
+        loadEvents();
+    </script>
+</body>
+</html>

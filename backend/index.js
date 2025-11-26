@@ -33,9 +33,9 @@ console.log('JWT_SECRET:', process.env.JWT_SECRET);  // Log de la clé JWT pour 
 
 app.post('/api/auth/register', async (req, res) => {
   const { firstName, lastName, email, phone, school, password } = req.body;
-  console.log(req.body)
+
   try {
-    // Validation des données
+    // Vérification champs obligatoires
     if (!firstName || !lastName || !email || !phone || !school || !password) {
       return res.status(400).json({ 
         success: false, 
@@ -43,7 +43,7 @@ app.post('/api/auth/register', async (req, res) => {
       });
     }
 
-    // Validation email
+    // Email valide
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ 
@@ -52,77 +52,77 @@ app.post('/api/auth/register', async (req, res) => {
       });
     }
 
-    // Validation mot de passe (min 8 caractères)
+    // Mot de passe sécurisé
     if (password.length < 8) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Le mot de passe doit contenir au moins 8 caractères' 
+      return res.status(400).json({
+        success: false,
+        message: 'Le mot de passe doit contenir au moins 8 caractères'
       });
     }
 
     const connection = await pool.getConnection();
 
     try {
-      // Vérifier si l'utilisateur existe déjà
-      const [existingUsers] = await connection.execute(
+      // Vérifier si email existe déjà
+      const [existing] = await connection.execute(
         'SELECT id FROM users WHERE email = ?',
         [email]
       );
 
-      if (existingUsers.length > 0) {
+      if (existing.length > 0) {
         connection.release();
-        return res.status(409).json({ 
-          success: false, 
-          message: 'Un compte avec cet email existe déjà' 
+        return res.status(409).json({
+          success: false,
+          message: 'Un compte avec cet email existe déjà'
         });
       }
 
-      // Hasher le mot de passe
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
+      // Hash du mot de passe
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-      // Insérer le nouvel utilisateur
+      // Rôle par défaut = user
+      const role = "user";
+
+      // Insérer l'utilisateur
       const [result] = await connection.execute(
         `INSERT INTO users (
-            email, 
-            password_hash, 
-            first_name, 
-            last_name, 
-            phone, 
-            university, 
-            profile_picture_url, 
-            role, 
-            is_active,
-            created_at
-        ) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
-        [email, hashedPassword, firstName, lastName, phone, school, "test", 'user', true]
-        );
+          email, password_hash, first_name, last_name, phone, university, 
+          profile_picture_url, role, is_active, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+        [email, hashedPassword, firstName, lastName, phone, school, null, role, true]
+      );
 
+      const id = result.insertId;
 
-      const userId = result.insertId;
-
-      // Créer un token JWT
+      // 🔥 CRÉER TOKEN AVEC LE RÔLE
       const token = jwt.sign(
-        { userId, email, firstName, lastName },
+        { 
+          id,
+          email,
+          firstName,
+          lastName,
+          role        // 🔥🔥🔥 essentiel !
+        },
         JWT_SECRET,
         { expiresIn: '7d' }
       );
 
       connection.release();
 
+      // Réponse
       res.status(201).json({
         success: true,
         message: 'Inscription réussie',
         data: {
           token,
           user: {
-            id: userId,
+            id,
             firstName,
             lastName,
             email,
             phone,
-            school
+            school,
+            role
           }
         }
       });
@@ -134,22 +134,20 @@ app.post('/api/auth/register', async (req, res) => {
 
   } catch (error) {
     console.error('Erreur lors de l\'inscription:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Erreur serveur lors de l\'inscription' 
+    res.status(500).json({
+      success: false,
+      message: 'Erreur serveur lors de l\'inscription'
     });
   }
 });
 
-// Route de connexion
+
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
-  console.log('Requête reçue:', req.body);  // Log des données reçues
+  console.log('Requête reçue:', req.body);
 
   try {
-    // Validation des données
     if (!email || !password) {
-      console.log('Email ou mot de passe manquant');
       return res.status(400).json({ 
         success: false, 
         message: 'Email et mot de passe requis' 
@@ -157,7 +155,6 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     const connection = await pool.getConnection();
-    console.log('Connexion à la base de données réussie.');
 
     try {
       const [users] = await connection.execute(
@@ -166,7 +163,6 @@ app.post('/api/auth/login', async (req, res) => {
       );
 
       if (users.length === 0) {
-        console.log('Utilisateur non trouvé pour l\'email:', email);
         connection.release();
         return res.status(401).json({ 
           success: false, 
@@ -176,18 +172,7 @@ app.post('/api/auth/login', async (req, res) => {
 
       const user = users[0];
 
-      if (!user.password_hash) {
-        console.log('Mot de passe manquant pour l\'utilisateur:', user.id);
-        connection.release();
-        return res.status(500).json({ 
-          success: false, 
-          message: 'Mot de passe manquant dans la base de données' 
-        });
-      }
-
       const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-      console.log('Mot de passe validé:', isPasswordValid);
-
       if (!isPasswordValid) {
         connection.release();
         return res.status(401).json({ 
@@ -196,19 +181,20 @@ app.post('/api/auth/login', async (req, res) => {
         });
       }
 
+      // 🔥 Inclure le rôle dans le JWT
       const token = jwt.sign(
-        { 
-          userId: user.id, 
-          email: user.email, 
-          firstName: user.first_name, 
+        {
+          id: user.id,                  // id utilisateur
+          email: user.email,
+          firstName: user.first_name,
           lastName: user.last_name,
+          role: user.role               // <-- rôle ajouté
         },
         process.env.JWT_SECRET,
         { expiresIn: '7d' }
       );
 
       connection.release();
-      console.log('Connexion réussie, token généré.');
 
       res.json({
         success: true,
@@ -221,16 +207,15 @@ app.post('/api/auth/login', async (req, res) => {
             lastName: user.last_name,
             email: user.email,
             phone: user.phone,
-            school: user.school,
-            role: user.role
-
+            school: user.university,
+            role: user.role              // <-- rôle aussi ici
           }
         }
       });
 
     } catch (error) {
       connection.release();
-      console.error('Erreur lors du traitement de la requête:', error);
+      console.error('Erreur traitement login:', error);
       res.status(500).json({ 
         success: false, 
         message: 'Erreur interne lors de la connexion' 
@@ -238,7 +223,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
   } catch (error) {
-    console.error('Erreur serveur:', error);
+    console.error('Erreur serveur login:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Erreur serveur lors de la connexion' 
@@ -247,33 +232,37 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 
+
 // ============================================
 // MIDDLEWARE D'AUTHENTIFICATION
 // ============================================
 
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Format: "Bearer TOKEN"
+  const token = authHeader?.split(' ')[1]; 
 
   if (!token) {
-    return res.status(401).json({ 
-      success: false, 
-      message: 'Token d\'authentification requis' 
+    return res.status(401).json({
+      success: false,
+      message: 'Token d\'authentification requis'
     });
   }
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Token invalide ou expiré' 
+      return res.status(403).json({
+        success: false,
+        message: 'Token invalide ou expiré'
       });
     }
 
+    // user = { id, email, firstName, lastName, role }
     req.user = user;
+
     next();
   });
 };
+
 
 // ============================================
 // ROUTE PROTÉGÉE EXEMPLE
@@ -336,6 +325,434 @@ app.get('/api/health', (req, res) => {
     message: 'API EventHub opérationnelle',
     timestamp: new Date().toISOString()
   });
+});
+
+// ============================================
+// ROUTES EVENTS
+// ============================================
+const checkOrganizer = (req, res, next) => {
+  console.log(req.user.role)
+    if (req.user.role !== 'organisateur') {
+        return res.status(403).json({ error: 'Accès réservé aux organisateurs' });
+    }
+    next();
+};
+
+
+app.get('/api/events', async (req, res) => {
+    try {
+        const { category, search, date, limit, offset } = req.query;
+        
+        let query = `
+            SELECT 
+                e.id,
+                e.name,
+                e.description,
+                e.date,
+                e.category,
+                e.image,
+                e.created_at,
+                u.first_name,
+                u.last_name,
+                u.email as organizer_email,
+                COUNT(DISTINCT ep.user_id) as participant_count
+            FROM events e
+            LEFT JOIN users u ON e.organizer_id = u.id
+            LEFT JOIN event_participants ep ON e.id = ep.event_id
+            WHERE 1=1
+        `;
+        
+        const params = [];
+
+        if (category) {
+            query += ' AND e.category = ?';
+            params.push(category);
+        }
+
+        if (search) {
+            query += ' AND (e.name LIKE ? OR e.description LIKE ?)';
+            const searchTerm = `%${search}%`;
+            params.push(searchTerm, searchTerm);
+        }
+
+        if (date) {
+            query += ' AND DATE(e.date) = ?';
+            params.push(date);
+        }
+
+        query += ' GROUP BY e.id ORDER BY e.date ASC';
+
+        if (limit) {
+            query += ' LIMIT ?';
+            params.push(parseInt(limit));
+            
+            if (offset) {
+                query += ' OFFSET ?';
+                params.push(parseInt(offset));
+            }
+        }
+
+        const [events] = await pool.execute(query, params);
+
+        const sanitizedEvents = events.map(event => ({
+            id: event.id,
+            name: event.name,
+            description: event.description,
+            date: event.date,
+            category: event.category,
+            image: event.image,
+            organizer: {
+                name: `${event.first_name} ${event.last_name}`
+            },
+            participantCount: event.participant_count,
+            createdAt: event.created_at
+        }));
+
+        res.json({
+            success: true,
+            events: sanitizedEvents,
+            count: sanitizedEvents.length
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la récupération des événements:', error);
+        res.status(500).json({ 
+            error: 'Erreur lors de la récupération des événements',
+            message: error.message 
+        });
+    }
+});
+
+app.get('/api/events/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const [events] = await pool.execute(`
+          SELECT 
+              e.*,
+              u.first_name,
+              u.last_name,
+              u.email as organizer_email,
+              COUNT(DISTINCT ep.user_id) as participant_count
+          FROM events e
+          LEFT JOIN users u ON e.organizer_id = u.id
+          LEFT JOIN event_participants ep ON e.id = ep.event_id
+          WHERE e.id = ?
+          GROUP BY e.id
+        `, [id]);
+
+        if (events.length === 0) {
+            return res.status(404).json({ error: 'Événement non trouvé' });
+        }
+
+        const event = events[0];
+        const sanitizedEvent = {
+            id: event.id,
+            name: event.name,
+            description: event.description,
+            date: event.date,
+            category: event.category,
+            image: event.image,
+            organizer: {
+                name: `${event.first_name} ${event.last_name}`
+            },
+            participantCount: event.participant_count,
+            createdAt: event.created_at
+        };
+
+        res.json({
+            success: true,
+            event: sanitizedEvent
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la récupération de l\'événement:', error);
+        res.status(500).json({ 
+            error: 'Erreur lors de la récupération de l\'événement',
+            message: error.message 
+        });
+    }
+});
+
+app.post('/api/events/createevent', authenticateToken, checkOrganizer, async (req, res) => {
+    try {
+        const { name, description, date, category, image } = req.body;
+
+        if (!name || !description || !date || !category) {
+            return res.status(400).json({ 
+                error: 'Tous les champs obligatoires doivent être remplis',
+                required: ['name', 'description', 'date', 'category']
+            });
+        }
+
+        const validCategories = ['Ateliers', 'Conférences', 'Soirées', 'Hackathons', 'Séminaires'];
+        if (!validCategories.includes(category)) {
+            return res.status(400).json({ 
+                error: 'Catégorie invalide',
+                validCategories 
+            });
+        }
+
+        const eventDate = new Date(date);
+        if (eventDate < new Date()) {
+            return res.status(400).json({ 
+                error: 'La date de l\'événement doit être dans le futur' 
+            });
+        }
+
+        if (image) {
+            try {
+                new URL(image);
+            } catch (e) {
+                return res.status(400).json({ 
+                    error: 'L\'URL de l\'image est invalide' 
+                });
+            }
+        }
+
+        const sanitizedName = name.trim().substring(0, 255);
+        const sanitizedDescription = description.trim();
+        const sanitizedImage = image ? image.trim().substring(0, 500) : null;
+
+        const [result] = await pool.execute(
+            `INSERT INTO events (name, description, date, category, image, organizer_id) 
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [sanitizedName, sanitizedDescription, date, category, sanitizedImage, req.user.id]
+        );
+
+        const [newEvent] = await pool.execute(
+            'SELECT * FROM events WHERE id = ?',
+            [result.insertId]
+        );
+
+        res.status(201).json({
+            success: true,
+            message: 'Événement créé avec succès',
+            event: {
+                id: newEvent[0].id,
+                name: newEvent[0].name,
+                description: newEvent[0].description,
+                date: newEvent[0].date,
+                category: newEvent[0].category,
+                image: newEvent[0].image,
+                createdAt: newEvent[0].created_at
+            }
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la création de l\'événement:', error);
+        res.status(500).json({ 
+            error: 'Erreur lors de la création de l\'événement',
+            message: error.message 
+        });
+    }
+});
+
+app.put('/api/events/:id', authenticateToken, checkOrganizer, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, description, date, category, image } = req.body;
+
+        const [events] = await pool.execute(
+            'SELECT * FROM events WHERE id = ? AND organizer_id = ?',
+            [id, req.user.id]
+        );
+
+        if (events.length === 0) {
+            return res.status(404).json({ 
+                error: 'Événement non trouvé ou vous n\'êtes pas autorisé à le modifier' 
+            });
+        }
+
+        const updates = [];
+        const params = [];
+
+        if (name !== undefined) {
+            updates.push('name = ?');
+            params.push(name.trim().substring(0, 255));
+        }
+        if (description !== undefined) {
+            updates.push('description = ?');
+            params.push(description.trim());
+        }
+        if (date !== undefined) {
+            const eventDate = new Date(date);
+            if (eventDate < new Date()) {
+                return res.status(400).json({ 
+                    error: 'La date de l\'événement doit être dans le futur' 
+                });
+            }
+            updates.push('date = ?');
+            params.push(date);
+        }
+        if (category !== undefined) {
+            const validCategories = ['Ateliers', 'Conférences', 'Soirées', 'Hackathons', 'Séminaires'];
+            if (!validCategories.includes(category)) {
+                return res.status(400).json({ 
+                    error: 'Catégorie invalide',
+                    validCategories 
+                });
+            }
+            updates.push('category = ?');
+            params.push(category);
+        }
+        if (image !== undefined) {
+            if (image) {
+                try {
+                    new URL(image);
+                } catch (e) {
+                    return res.status(400).json({ 
+                        error: 'L\'URL de l\'image est invalide' 
+                    });
+                }
+            }
+            updates.push('image = ?');
+            params.push(image ? image.trim().substring(0, 500) : null);
+        }
+
+        if (updates.length === 0) {
+            return res.status(400).json({ 
+                error: 'Aucune modification fournie' 
+            });
+        }
+
+        params.push(id);
+
+        await pool.execute(
+            `UPDATE events SET ${updates.join(', ')} WHERE id = ?`,
+            params
+        );
+
+        const [updatedEvent] = await pool.execute(
+            'SELECT * FROM events WHERE id = ?',
+            [id]
+        );
+
+        res.json({
+            success: true,
+            message: 'Événement mis à jour avec succès',
+            event: updatedEvent[0]
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la modification de l\'événement:', error);
+        res.status(500).json({ 
+            error: 'Erreur lors de la modification de l\'événement',
+            message: error.message 
+        });
+    }
+});
+
+app.delete('/api/events/:id', authenticateToken, checkOrganizer, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const [events] = await pool.execute(
+            'SELECT * FROM events WHERE id = ? AND organizer_id = ?',
+            [id, req.user.id]
+        );
+
+        if (events.length === 0) {
+            return res.status(404).json({ 
+                error: 'Événement non trouvé ou vous n\'êtes pas autorisé à le supprimer' 
+            });
+        }
+
+        await pool.execute('DELETE FROM events WHERE id = ?', [id]);
+
+        res.json({
+            success: true,
+            message: 'Événement supprimé avec succès'
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la suppression de l\'événement:', error);
+        res.status(500).json({ 
+            error: 'Erreur lors de la suppression de l\'événement',
+            message: error.message 
+        });
+    }
+});
+
+app.post('/api/events/:id/register', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const [events] = await pool.execute(
+            'SELECT * FROM events WHERE id = ?',
+            [id]
+        );
+
+        if (events.length === 0) {
+            return res.status(404).json({ error: 'Événement non trouvé' });
+        }
+
+        if (new Date(events[0].date) < new Date()) {
+            return res.status(400).json({ 
+                error: 'Impossible de s\'inscrire à un événement passé' 
+            });
+        }
+
+        // Vérifier si l'utilisateur est déjà inscrit
+        const [existing] = await pool.execute(
+            'SELECT * FROM event_participants WHERE event_id = ? AND user_id = ?',
+            [id, req.user.id]
+        );
+
+        if (existing.length > 0) {
+            return res.status(400).json({ 
+                error: 'Vous êtes déjà inscrit à cet événement' 
+            });
+        }
+
+        // Inscrire l'utilisateur
+        await pool.execute(
+            'INSERT INTO event_participants (event_id, user_id) VALUES (?, ?)',
+            [id, req.user.id]
+        );
+
+        res.status(201).json({
+            success: true,
+            message: 'Inscription réussie'
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de l\'inscription:', error);
+        res.status(500).json({ 
+            error: 'Erreur lors de l\'inscription',
+            message: error.message 
+        });
+    }
+});
+
+// DELETE - Se désinscrire d'un événement
+app.delete('/api/events/:id/unregister', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const [result] = await pool.execute(
+            'DELETE FROM event_participants WHERE event_id = ? AND user_id = ?',
+            [id, req.user.id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ 
+                error: 'Vous n\'êtes pas inscrit à cet événement' 
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Désinscription réussie'
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la désinscription:', error);
+        res.status(500).json({ 
+            error: 'Erreur lors de la désinscription',
+            message: error.message 
+        });
+    }
 });
 
 // ============================================
