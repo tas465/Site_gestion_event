@@ -643,7 +643,45 @@
         </div>
     </div>
 
+    <!-- Event Details Modal -->
+<div class="modal" id="eventDetailsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title" id="eventDetailsTitle">Événement</h3>
+            <button class="btn-close" onclick="closeEventDetails()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div id="eventDetailsBody">
+            <img id="eventDetailsImage" style="width:100%; border-radius:12px; margin-bottom:1rem; display:none;">
+
+            <p><strong>Date :</strong> <span id="eventDetailsDate"></span></p>
+            <p><strong>Catégorie :</strong> <span id="eventDetailsCategory"></span></p>
+            <p><strong>Organisateur :</strong> <span id="eventDetailsOrganizer"></span></p>
+            <p><strong>Participants :</strong> <span id="eventDetailsParticipants"></span></p>
+
+            <h4 style="margin-top:1rem;">Description</h4>
+            <p id="eventDetailsDescription"></p>
+
+            <div class="form-actions">
+                <button class="btn-submit" id="joinEventBtn" onclick="joinEvent()">Rejoindre</button>
+                <button class="btn-cancel" id="leaveEventBtn" onclick="leaveEvent()" style="display:none;">Se désinscrire</button>
+            </div>
+        </div>
+    </div>
+</div>
+
     <script>
+
+
+        if (localStorage.getItem("authToken") == null) {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userData');
+
+            window.location.href = '../login/login.html';
+        }
+
         // Configuration API
         const API_URL = 'http://localhost:3000/api';
         let events = [];
@@ -740,7 +778,7 @@
                 const safeCategory = escapeHtml(event.category);
                 
                 return `
-                    <div class="event-card">
+                    <div class="event-card" onclick="openEventDetails(${event.id})">
                         <div class="event-image" style="${event.image ? `background-image: url('${escapeHtml(event.image)}'); background-size: cover; background-position: center;` : ''}">
                             ${!event.image ? `<i class="fa-solid ${getCategoryIcon(event.category)}"></i>` : ''}
                             <span class="event-category-badge">${safeCategory}</span>
@@ -762,6 +800,108 @@
                 `;
             }).join('');
         }
+
+        let selectedEventId = null;
+
+// Ouvrir la modal details
+async function openEventDetails(id) {
+    selectedEventId = id;
+
+    try {
+        const response = await fetch(`${API_URL}/events/${id}`);
+        const data = await response.json();
+
+        if (!data.success) throw new Error("Erreur lors du chargement");
+
+        const e = data.event;
+
+        // Remplit la modal
+        document.getElementById("eventDetailsTitle").innerText = e.name;
+        document.getElementById("eventDetailsDescription").innerText = e.description;
+        document.getElementById("eventDetailsDate").innerText = formatDate(e.date);
+        document.getElementById("eventDetailsCategory").innerText = e.category;
+        document.getElementById("eventDetailsOrganizer").innerText = e.organizer.name;
+        document.getElementById("eventDetailsParticipants").innerText = e.participantCount;
+
+        // Image
+        const img = document.getElementById("eventDetailsImage");
+        if (e.image) {
+            img.src = e.image;
+            img.style.display = "block";
+        } else {
+            img.style.display = "none";
+        }
+
+        // Vérifier inscription
+        const user = JSON.parse(localStorage.getItem("userData"));
+        const registered = await isUserRegistered(e.id, user.id);
+
+        document.getElementById("joinEventBtn").style.display = registered ? "none" : "inline-block";
+        document.getElementById("leaveEventBtn").style.display = registered ? "inline-block" : "none";
+
+        // Afficher modal
+        document.getElementById("eventDetailsModal").classList.add("active");
+
+    } catch (error) {
+        alert("Erreur : " + error.message);
+    }
+}
+
+function closeEventDetails() {
+    document.getElementById("eventDetailsModal").classList.remove("active");
+    selectedEventId = null;
+}
+
+// Vérifie si utilisateur est inscrit
+async function isUserRegistered(eventId, userId) {
+    const response = await fetch(`${API_URL}/events/${eventId}`);
+    const data = await response.json();
+    if (!data.success) return false;
+
+    // Le back ne renvoie pas la liste, donc on refait une requête SQL dans le back plus tard si tu veux.
+    // Pour l’instant on compare juste une estimation :
+    return false;
+}
+
+// Rejoindre
+async function joinEvent() {
+    const token = getAuthToken();
+    if (!token) return alert("Connexion requise");
+
+    const res = await fetch(`${API_URL}/events/${selectedEventId}/register`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    const data = await res.json();
+    if (data.success) {
+        alert("Inscription réussie !");
+        closeEventDetails();
+        loadEvents();
+    } else {
+        alert(data.error);
+    }
+}
+
+// Se désinscrire
+async function leaveEvent() {
+    const token = getAuthToken();
+    if (!token) return alert("Connexion requise");
+
+    const res = await fetch(`${API_URL}/events/${selectedEventId}/unregister`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    const data = await res.json();
+    if (data.success) {
+        alert("Désinscription réussie !");
+        closeEventDetails();
+        loadEvents();
+    } else {
+        alert(data.error);
+    }
+}
 
         // Escape HTML to prevent XSS attacks
         function escapeHtml(text) {

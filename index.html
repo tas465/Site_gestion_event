@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <!-- Navigation -->
     <nav>
         <div class="logo">EventHub</div>
         <ul class="nav-links">
@@ -23,7 +22,6 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
     <section class="hero" id="accueil">
         <div class="hero-content">
             <h1>Gérez et participez<br>À vos événements en ligne</h1>
@@ -33,7 +31,6 @@
         <div class="circle-decoration"></div>
     </section>
 
-    <!-- Stats Section -->
     <section class="stats">
         <div class="stat-card">
             <div class="stat-number" data-count="500">0</div>
@@ -53,7 +50,6 @@
         </div>
     </section>
 
-    <!-- Features Section -->
     <section class="features" id="presentation">
         <h2 class="section-title">Pourquoi choisir EventHub ?</h2>
         <p class="section-subtitle">Une plateforme complète pour gérer tous vos événements étudiants</p>
@@ -92,7 +88,6 @@
         </div>
     </section>
 
-    <!-- Event Types Section -->
     <section class="event-types" id="evenements">
         <h2 class="section-title">Types d'événements</h2>
         <p class="section-subtitle">Découvrez la diversité des événements proposés</p>
@@ -126,7 +121,6 @@
         </div>
     </section>
 
-    <!-- How it works -->
     <section class="features" id="comment-ca-marche">
         <h2 class="section-title">Comment ça marche ?</h2>
         <p class="section-subtitle">Rejoignez EventHub en 3 étapes simples</p>
@@ -172,7 +166,6 @@
     </footer>
 
     <script>
-        // Counter animation for stats
         function animateCounter(element, start, end, duration) {
             let current = start;
             const increment = (end - start) / (duration / 16);
@@ -187,7 +180,6 @@
             }, 16);
         }
 
-        // Intersection Observer for stats animation
         const statsObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -203,7 +195,6 @@
             statsObserver.observe(stat);
         });
 
-        // Smooth scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -217,7 +208,6 @@
             });
         });
 
-        // Placeholder functions for login/register
         function showLogin() {
             window.location.href = './pages/login/login.html';
         }
@@ -226,7 +216,6 @@
             window.location.href = './pages/login/login.html';
         }
 
-        // Add scroll effect to navbar
         window.addEventListener('scroll', () => {
             const nav = document.querySelector('nav');
             if (window.scrollY > 50) {

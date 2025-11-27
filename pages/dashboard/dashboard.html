@@ -21,7 +21,6 @@
             display: flex;
         }
 
-        /* Sidebar */
         .sidebar {
             width: 280px;
             background: rgba(255, 255, 255, 0.95);
@@ -109,7 +108,6 @@
             margin-top: 1rem;
         }
 
-        /* Main Content */
         .main-content {
             flex: 1;
             margin-left: 280px;
@@ -117,7 +115,6 @@
             min-height: 100vh;
         }
 
-        /* Header */
         .header {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -215,7 +212,6 @@
             color: #8b5cf6;
         }
 
-        /* Stats Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -279,7 +275,6 @@
             font-size: 0.95rem;
         }
 
-        /* Content Sections */
         .content-section {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -319,7 +314,6 @@
             background: rgba(139, 92, 246, 0.1);
         }
 
-        /* Event Cards */
         .events-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -414,7 +408,6 @@
             color: #3b82f6;
         }
 
-        /* Mobile Menu Toggle */
         .menu-toggle {
             display: none;
             position: fixed;
@@ -430,7 +423,6 @@
             font-size: 1.5rem;
         }
 
-        /* Responsive */
         @media (max-width: 1024px) {
             .menu-toggle {
                 display: block;
@@ -466,10 +458,8 @@
     </style>
 </head>
 <body>
-    <!-- Mobile Menu Toggle -->
     <button class="menu-toggle" onclick="toggleSidebar()"> <i class="fa-solid fa-bars"></i></button>
 
-    <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo">
@@ -484,7 +474,7 @@
                 <span>Dashboard</span>
             </a>
             <a href="./events.html" class="nav-item">
-                <span class="nav-item-icon"> <i class="fa-solid fa-party-horn"></i></span>
+                <span class="nav-item-icon"><i class="fa-solid fa-calendar-days"></i></span>
                 <span>Événements</span>
             </a>
             <a href="#" class="nav-item">
@@ -518,9 +508,7 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
     <main class="main-content">
-        <!-- Header -->
         <header class="header">
             <div class="header-title">
                 <h2>Tableau de bord</h2>
@@ -530,8 +518,8 @@
             <div class="user-info">
                 <div class="user-avatar">JD</div>
                 <div class="user-details">
-                    <h4 id="userName">Jean Dupont</h4> <!-- Le nom sera remplacé dynamiquement -->
-                    <p id="userRole">Organisateur</p> <!-- Le rôle sera également remplacé dynamiquement -->
+                    <h4 id="userName">Jean Dupont</h4>
+                    <p id="userRole">Organisateur</p>
                 </div>
                 <div class="user-dropdown">
                     <div class="dropdown-item" onclick="goToProfile()">
@@ -550,7 +538,6 @@
             </div>
         </header>
 
-        <!-- Statistics -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-header">
@@ -558,7 +545,7 @@
                         <div class="stat-value">12</div>
                         <div class="stat-label">Événements en cours</div>
                     </div>
-                    <div class="stat-icon purple"> <i class="fa-solid fa-party-horn"></i></div>
+                    <div class="stat-icon purple"> <i class="fa-regular fa-party-horn"></i></div>
                 </div>
             </div>
 
@@ -583,7 +570,6 @@
             </div>
         </div>
 
-        <!-- Mes événements à venir -->
         <section class="content-section">
             <div class="section-header">
                 <h3 class="section-title">Mes événements à venir</h3>
@@ -650,7 +636,6 @@
             </div>
         </section>
 
-        <!-- Derniers événements créés -->
         <section class="content-section">
             <div class="section-header">
                 <h3 class="section-title">Derniers événements créés</h3>
@@ -737,7 +722,6 @@
         }
 
         if (localStorage.getItem("authToken") == null) {
-            console.log("tst", localStorage.getItem("authToken"))
             logout()
         
         } else {
