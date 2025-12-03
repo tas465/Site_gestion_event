@@ -55,7 +55,7 @@ jobs:
       - name: ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.10.0
         with:
-          target: "https://ton-environnement-de-test.example.com"
+          target: "https://site-gestion-event.vercel.app/"
           rules_file_name: ".zap/rules.tsv"
           cmd_options: "-a"
   
