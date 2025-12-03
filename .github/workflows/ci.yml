@@ -35,14 +35,14 @@ jobs:
           fetch-depth: 0   # recommandé
 
       - name: SonarQube Scan (SonarCloud)
-        uses: sonarsource/sonarqube-scan-action@v5
+        uses: sonarsource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
         with:
           projectBaseDir: backend
           args: >
-            -Dsonar.organization=TON_ORGANIZATION_SONARCLOUD
-            -Dsonar.projectKey=TON_PROJECT_KEY
+            -Dsonar.organization=projet3-groupe
+            -Dsonar.projectKey=Site_gestion_event
             -Dsonar.sources=.
             -Dsonar.qualitygate.wait=true
