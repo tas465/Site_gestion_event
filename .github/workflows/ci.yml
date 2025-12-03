@@ -43,6 +43,6 @@ jobs:
           projectBaseDir: backend
           args: >
             -Dsonar.organization=projet3-groupe
-            -Dsonar.projectKey=Site_gestion_event
+            -Dsonar.projectKey=projet3-groupe_Site_gestion_event
             -Dsonar.sources=.
             -Dsonar.qualitygate.wait=true
