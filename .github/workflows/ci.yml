@@ -23,29 +23,25 @@ jobs:
         working-directory: ./backend
         run: npm install
 sonarcloud:
-    needs: build-and-test
+    name: SonarCloud Scan
+    needs: build-and-test        # attend que le job build-and-test soit ok
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # recommandé pour SonarCloud
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Install dependencies
-        run: npm install
-
+          fetch-depth: 0         # recommandé pour une meilleure analyse
+          
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN:  ${{ secrets.SONAR_TOKEN }}
         with:
+          projectBaseDir: backend
           args: >
-            -Dsonar.organization=TON_ORG_SONARCLOUD
+            -Dsonar.organization=TON_ORGANIZATION_SONARCLOUD
             -Dsonar.projectKey=TON_PROJECT_KEY
-            -Dsonar.sources=src
+            -Dsonar.sources=.
+            -Dsonar.qualitygate.wait=true
