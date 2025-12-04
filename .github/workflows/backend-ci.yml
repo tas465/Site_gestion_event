@@ -1,10 +1,13 @@
-name: Run Backend Security Tests - EventHub
+name: Backend CI
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
 
 jobs:
-  backend-security-tests:
+  build-and-test:
     runs-on: ubuntu-latest
 
     services:
@@ -16,62 +19,103 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h localhost"
+          --health-cmd="mysqladmin ping -h localhost -proot"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=5
+          --health-retries=10
+
+    env:
+      DB_HOST: 127.0.0.1
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: eventhub
+      DB_PORT: 3306
+      NODE_ENV: test
+      JWT_SECRET: 4c03abc78244a1e8691a3f8121f04ca8
+      ALLOWED_ORIGINS: http://localhost:3000,https://site-gestion-event.vercel.app,http://localhost:5500
+      LOG_LEVEL: info
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20
-        cache: npm
-        cache-dependency-path: backend/package-lock.json
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
 
-    - name: Install backend dependencies
-      working-directory: backend
-      run: npm ci
+      - name: Use backend directory
+        working-directory: ./backend
+        run: echo "Working in backend folder"
 
-    ########################################
-    # 🔥 On génère ton .env dans GitHub Actions
-    ########################################
-    - name: Generate .env file for CI
-      working-directory: backend
-      run: |
-        echo "JWT_SECRET=4c03abc78244a1e8691a3f8121f04ca8" > .env
-        echo "DB_HOST=127.0.0.1" >> .env
-        echo "DB_USER=root" >> .env
-        echo "DB_PASSWORD=root" >> .env
-        echo "DB_NAME=eventhub" >> .env
-        echo "DB_PORT=3306" >> .env
-        echo "ALLOWED_ORIGINS=http://localhost:3000,https://site-gestion-event.vercel.app,http://localhost:5500" >> .env
-        echo "NODE_ENV=test" >> .env
-        echo "LOG_LEVEL=info" >> .env
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm ci
 
-    ########################################
-    # 🚀 On démarre le backend AVEC l'env
-    ########################################
-    - name: Start backend
-      working-directory: backend
-      run: |
-        nohup npm start > server.log 2>&1 &
-        sleep 7
 
-    ########################################
-    # 🔒 Tests de sécurité
-    ########################################
-    - name: Run security tests
-      working-directory: backend
-      run: npm run test:security
+      ######################################################
+      # 1️⃣ Générer le .env avant tout
+      ######################################################
+      - name: Generate .env file
+        working-directory: ./backend
+        run: |
+          echo "JWT_SECRET=4c03abc78244a1e8691a3f8121f04ca8" > .env
+          echo "DB_HOST=127.0.0.1" >> .env
+          echo "DB_USER=root" >> .env
+          echo "DB_PASSWORD=root" >> .env
+          echo "DB_NAME=eventhub" >> .env
+          echo "DB_PORT=3306" >> .env
+          echo "NODE_ENV=test" >> .env
+          echo "LOG_LEVEL=info" >> .env
+          echo "ALLOWED_ORIGINS=http://localhost:3000,https://site-gestion-event.vercel.app,http://localhost:5500" >> .env
 
-    ########################################
-    # 📝 Logs en cas d'erreur
-    ########################################
-    - name: Show backend logs
-      if: always()
-      working-directory: backend
-      run: cat server.log
+
+      ######################################################
+      # 2️⃣ Attente du démarrage MySQL
+      ######################################################
+      - name: Wait for MySQL
+        run: |
+          for i in `seq 1 30`; do
+            (echo "select 1" | mysql -h 127.0.0.1 -uroot -proot eventhub) && break
+            echo "MySQL not ready yet..."
+            sleep 2
+          done
+
+
+      ######################################################
+      # 3️⃣ Import du SQL eventhub.sql
+      ######################################################
+      - name: Import SQL schema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+          mysql -h 127.0.0.1 -uroot -proot eventhub < eventhub.sql
+
+
+      ######################################################
+      # 4️⃣ Démarrer le backend
+      ######################################################
+      - name: Start app
+        working-directory: ./backend
+        run: |
+          npm start &> server.log &
+          sleep 7
+          echo "Backend started"
+
+
+      ######################################################
+      # 5️⃣ Tests de sécurité (doivent être APRÈS start app)
+      ######################################################
+      - name: Run security tests
+        working-directory: ./backend
+        run: npm run test:security
+
+
+      ######################################################
+      # 6️⃣ Logs backend si erreur
+      ######################################################
+      - name: Show backend logs
+        if: always()
+        working-directory: ./backend
+        run: cat server.log
