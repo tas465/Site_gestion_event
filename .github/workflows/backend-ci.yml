@@ -73,6 +73,17 @@ jobs:
         run: |
           echo "TODO: exécuter vos scripts SQL ou migrations ici"
 
+      - name: Start backend (en arrière-plan)
+        working-directory: ./backend
+        run: |
+          npm start &
+          echo "Attente du démarrage du backend..."
+          sleep 5  # ajuste si besoin selon ton temps de démarrage
+
+      - name: Run security tests
+        working-directory: ./backend
+        run: npm run test:security
+      
       - name: Run security tests
         working-directory: ./backend
         run: npm run test:security
