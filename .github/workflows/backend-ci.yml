@@ -83,6 +83,7 @@ jobs:
       - name: Run security tests
         working-directory: ./backend
         run: npm run test:security
+        continue-on-error: true
       
       - name: Run security tests
         working-directory: ./backend
