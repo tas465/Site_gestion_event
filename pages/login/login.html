@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion & Inscription - EventPro</title>
+    <title>Connexion & Inscription - EventHub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * {
@@ -26,7 +26,6 @@
             padding: 2rem 0;
         }
 
-        /* Decorative Circles */
         .circle-decoration {
             position: absolute;
             border-radius: 50%;
@@ -56,7 +55,6 @@
             50% { transform: translateY(-30px); }
         }
 
-        /* Container */
         .auth-container {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -92,7 +90,6 @@
             font-size: 0.95rem;
         }
 
-        /* Tabs */
         .auth-tabs {
             display: flex;
             gap: 1rem;
@@ -121,7 +118,6 @@
             box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
         }
 
-        /* Forms */
         .form-container {
             display: none;
         }
@@ -395,17 +391,15 @@
 
     <div class="auth-container">
         <div class="logo">
-            <h1>EventPro</h1>
+            <h1>EventHub</h1>
             <p id="logoSubtext">Bienvenue ! Connectez-vous à votre compte</p>
         </div>
 
-        <!-- Tabs -->
         <div class="auth-tabs">
             <button class="tab-btn active" onclick="showForm('login')">Connexion</button>
             <button class="tab-btn" onclick="showForm('register')">Inscription</button>
         </div>
 
-        <!-- Login Form -->
         <div id="loginForm" class="form-container active">
             <form onsubmit="handleLogin(event)">
                 <div class="form-group">
@@ -433,7 +427,6 @@
 
         </div>
 
-        <!-- Register Form -->
         <div id="registerForm" class="form-container">
             <form onsubmit="handleRegister(event)">
                 <div class="form-row">
@@ -497,14 +490,12 @@
     </div>
 
     <script>
-    // Fonction pour afficher et masquer les formulaires
     function showForm(formType) {
         const loginForm = document.getElementById('loginForm');
         const registerForm = document.getElementById('registerForm');
         const tabs = document.querySelectorAll('.tab-btn');
         const logoSubtext = document.getElementById('logoSubtext');
 
-        // Retirer la classe active de tous les onglets
         tabs.forEach(tab => tab.classList.remove('active'));
 
         if (formType === 'login') {
@@ -520,7 +511,6 @@
         }
     }
 
-    // Vérification de la force du mot de passe
     const passwordInput = document.getElementById('registerPassword');
     const strengthBar = document.getElementById('strengthBar');
     if (passwordInput) {
@@ -544,7 +534,6 @@
         });
     }
 
-    // Fonction de connexion
     function handleLogin(e) {
         e.preventDefault();
         
@@ -560,7 +549,7 @@
         .then(data => {
             console.log('Réponse du serveur:', data);  
             if (data.success) {
-                localStorage.setItem('authToken', data.data.token);
+                localStorage.setItem('authToken', data.data.accessToken);
                 localStorage.setItem('userData', JSON.stringify(data.data.user));
 
             window.location.href = '../dashboard/dashboard.html';
@@ -574,28 +563,16 @@
         });
     }
 
-    // Fonction pour afficher le profil utilisateur après la connexion
-    // function showUserProfile() {
-    //     const userData = JSON.parse(localStorage.getItem('userData'));
-    //     if (userData) {
-    //         document.getElementById('userName').textContent = userData.firstName + ' ' + userData.lastName;
-    //         document.getElementById('userEmail').textContent = userData.email;
-    //         document.getElementById('userPhone').textContent = userData.phone;
-    //         document.getElementById('userSchool').textContent = userData.school;
-    //     }
-    // }
 
-    // Fonction pour s'inscrire
+
     function handleRegister(e) {
         e.preventDefault();
         
         let isValid = true;
         const formGroups = document.querySelectorAll('#registerForm .form-group');
         
-        // Réinitialiser les erreurs
         formGroups.forEach(group => group.classList.remove('error'));
 
-        // Récupérer les valeurs du formulaire
         const firstName = document.getElementById('firstName').value.trim();
         const lastName = document.getElementById('lastName').value.trim();
         const email = document.getElementById('registerEmail').value.trim();
@@ -605,7 +582,6 @@
         const confirmPassword = document.getElementById('confirmPassword').value;
         const terms = document.getElementById('terms').checked;
 
-        // Validation des champs
         if (!firstName) {
             document.getElementById('firstName').parentElement.classList.add('error');
             isValid = false;
@@ -661,7 +637,7 @@
             });
 
             console.log('Inscription avec:', { firstName, lastName, email, phone, school });
-            alert('Inscription réussie ! 🎉\nBienvenue sur EventPro !');
+            alert('Inscription réussie ! 🎉\nBienvenue sur EventHub !');
             e.target.reset();
             strengthBar.className = 'password-strength-bar';
         }
@@ -674,16 +650,6 @@
         alert('Vous êtes maintenant déconnecté.');
         window.location.reload(); 
     }
-
-    // window.onload = function() {
-    //     const token = localStorage.getItem('authToken');
-    //     if (token) {
-    //         showUserProfile();
-    //     } else {
-    //         alert('Veuillez vous connecter pour accéder au profil.');
-    //     }
-    // }
-
 </script>
 
 </body>

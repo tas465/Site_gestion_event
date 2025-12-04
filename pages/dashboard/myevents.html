@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Mes événements - EventHub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #212529;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(139, 92, 246, 0.2);
+            padding: 2rem 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 0 1.5rem 2rem;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.3rem;
+        }
+
+        .logo p {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        .nav-menu {
+            margin-top: 2rem;
+            padding: 0 1rem;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            justify-content: space-between;
+        }
+
+        .logout-container {
+            padding: 1rem;
+        }
+
+        .logout-item {
+            background: #fee2e2;
+            color: #b91c1c;
+            font-weight: 600;
+        }
+
+        .logout-item:hover {
+            background: #fecaca;
+            color: #7f1d1d;
+            transform: translateX(5px);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.2rem;
+            margin-bottom: 0.5rem;
+            border-radius: 12px;
+            color: #495057;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .nav-item-icon {
+            font-size: 1.3rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: rgba(139, 92, 246, 0.1);
+            margin: 1.5rem 1rem;
+        }
+
+        .nav-section-title {
+            padding: 0 1.2rem;
+            color: #6c757d;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .header-title h2 {
+            font-size: 1.8rem;
+            color: #212529;
+            margin-bottom: 0.3rem;
+        }
+
+        .header-title p {
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .user-info:hover {
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .user-details h4 {
+            color: #212529;
+            font-size: 0.95rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .user-details p {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            padding: 0.5rem;
+            min-width: 200px;
+            z-index: 1000;
+        }
+
+        .user-info:hover .user-dropdown {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+        }
+
+        .filter-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            padding: 0.7rem 1.5rem;
+            border-radius: 12px;
+            background: transparent;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .filter-tab:hover {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+        }
+
+        .filter-tab.active {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .content-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            color: #212529;
+            font-weight: 600;
+        }
+
+        .events-count {
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .event-card {
+            background: #fff;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.15);
+        }
+
+        .event-image {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #fff;
+        }
+
+        .event-content {
+            padding: 1.3rem;
+        }
+
+        .event-date {
+            display: inline-block;
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+        }
+
+        .event-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-location {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .event-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .event-participants {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .event-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 0.7rem;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-view {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+        }
+
+        .btn-view:hover {
+            background: rgba(139, 92, 246, 0.2);
+        }
+
+        .btn-cancel {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .btn-cancel:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .event-status {
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-upcoming {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .status-ongoing {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+
+        .status-completed {
+            background: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            color: #212529;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: #6c757d;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-explore {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-explore:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            z-index: 1001;
+            background: #fff;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            font-size: 1.5rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #fff;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #212529;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6c757d;
+            transition: all 0.3s;
+        }
+
+        .btn-close:hover {
+            color: #212529;
+            transform: rotate(90deg);
+        }
+
+        @media (max-width: 1024px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 5rem 1.5rem 1.5rem;
+            }
+
+            .events-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .filter-tabs {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <h1>EventHub</h1>
+                <p>Gestion d'événements</p>
+            </div>
+        </div>
+
+        <div class="nav-menu">
+            <a href="./dashboard.html" class="nav-item">
+                <span class="nav-item-icon"><i class="fas fa-chart-column"></i></span>
+                <span>Dashboard</span>
+            </a>
+            <a href="./events.html" class="nav-item">
+                <span class="nav-item-icon"><i class="fas fa-calendar-days"></i></span>
+                <span>Événements</span>
+            </a>
+            <a href="#" class="nav-item active">
+                <span class="nav-item-icon"><i class="fas fa-calendar"></i></span>
+                <span>Mes événements</span>
+            </a>
+            <a href="../dashboard/profile.html" class="nav-item">
+                <span class="nav-item-icon"><i class="fas fa-user"></i></span>
+                <span>Mon profil</span>
+            </a>
+
+            <div class="nav-divider"></div>
+            <div class="nav-section-title">Organisateur</div>
+
+            <a href="#" class="nav-item">
+                <span class="nav-item-icon"><i class="fas fa-plus"></i></span>
+                <span>Créer un événement</span>
+            </a>
+
+            <div class="nav-divider"></div>
+            <div class="nav-section-title">Administration</div>
+
+            <a href="./admin/users.html" class="nav-item">
+                <span class="nav-item-icon"> <i class="fa-solid fa-users"></i></span>
+                <span>Tous les utilisateurs</span>
+            </a>
+            <a href="./admin/logs.html" class="nav-item">
+                <span class="nav-item-icon"> <i class="fa-solid fa-note"></i></span>
+                <span>Logs</span>
+            </a>
+        </div>
+        <div class="logout-container" onclick="logout()">
+            <a href="" class="nav-item logout-item">
+                <span class="nav-item-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
+                <span>Se déconnecter</span>
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <header class="header">
+            <div class="header-title">
+                <h2>Mes événements</h2>
+                <p>Gérez vos inscriptions aux événements</p>
+            </div>
+
+            <div class="user-info">
+                <div class="user-avatar">JD</div>
+                <div class="user-details">
+                    <h4 id="userName">Jean Dupont</h4>
+                    <p id="userRole">Organisateur</p>
+                </div>
+                <div class="user-dropdown">
+                    <div class="dropdown-item" onclick="goToProfile()">
+                        <span><i class="fas fa-user"></i></span>
+                        <span>Mon profil</span>
+                    </div>
+                    <div class="dropdown-item" onclick="goToSettings()">
+                        <span><i class="fas fa-gear"></i></span>
+                        <span>Paramètres</span>
+                    </div>
+                    <div class="dropdown-item" onclick="logout()">
+                        <span><i class="fas fa-door-closed"></i></span>
+                        <span>Déconnexion</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="filter-section">
+            <div class="filter-tabs">
+                <button class="filter-tab active" onclick="filterEvents('all')">
+                    <i class="fas fa-calendar"></i> Tous
+                </button>
+                <button class="filter-tab" onclick="filterEvents('upcoming')">
+                    <i class="fas fa-clock"></i> À venir
+                </button>
+                <button class="filter-tab" onclick="filterEvents('ongoing')">
+                    <i class="fas fa-play"></i> En cours
+                </button>
+                <button class="filter-tab" onclick="filterEvents('completed')">
+                    <i class="fas fa-check"></i> Terminés
+                </button>
+            </div>
+        </div>
+
+        <section class="content-section">
+            <div class="section-header">
+                <h3 class="section-title">Événements inscrits</h3>
+                <span class="events-count" id="eventsCount">8 événements</span>
+            </div>
+
+            <div class="events-grid" id="eventsGrid">
+            </div>
+
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="empty-state-icon">
+                    <i class="fas fa-calendar-xmark"></i>
+                </div>
+                <h3>Aucun événement trouvé</h3>
+                <p>Vous n'êtes inscrit à aucun événement pour le moment</p>
+                <a href="./events.html" class="btn-explore">
+                    <i class="fas fa-search"></i> Explorer les événements
+                </a>
+            </div>
+        </section>
+    </main>
+
+<div class="modal" id="eventDetailsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title" id="eventDetailsTitle">Événement</h3>
+            <button class="btn-close" onclick="closeEventDetails()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div id="eventDetailsBody">
+            <img id="eventDetailsImage" style="width:100%; border-radius:12px; margin-bottom:1rem; display:none;">
+
+            <p><strong>Date :</strong> <span id="eventDetailsDate"></span></p>
+            <p><strong>Catégorie :</strong> <span id="eventDetailsCategory"></span></p>
+            <p><strong>Organisateur :</strong> <span id="eventDetailsOrganizer"></span></p>
+            <p><strong>Participants :</strong> <span id="eventDetailsParticipants"></span></p>
+
+            <h4 style="margin-top:1rem;">Description</h4>
+            <p id="eventDetailsDescription"></p>
+
+            <div class="form-actions">
+                <button class="btn-submit" id="joinEventBtn" onclick="joinEvent()">Rejoindre</button>
+                <button class="btn-cancel" id="leaveEventBtn" onclick="leaveEvent()" style="display:none;">Se désinscrire</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = "http://localhost:3000/api";
+    let currentFilter = "all";
+    let loadedEvents = [];
+
+    async function loadUserEvents() {
+        const token = localStorage.getItem("authToken");
+
+        const response = await fetch(`${API_BASE}/user/events`, {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            document.getElementById('emptyState').style.display = "block";
+            return;
+        }
+
+        loadedEvents = data.events;
+
+        renderEvents();
+    }
+
+    function getEventStatus(eventDate) {
+        const now = new Date();
+        const date = new Date(eventDate);
+
+        if (date > now) return "upcoming";
+        return "completed";
+        
+    }
+
+
+function closeEventDetails() {
+    document.getElementById("eventDetailsModal").classList.remove("active");
+    selectedEventId = null;
+}
+
+    async function viewEvent(eventid) {
+        try {
+            const response = await fetch(`http://localhost:3000/api/events/${eventid}`);
+            const data = await response.json();
+
+            if (!data.success) throw new Error("Erreur lors du chargement");
+
+            const e = data.event;
+
+            document.getElementById("eventDetailsTitle").innerText = e.name;
+            document.getElementById("eventDetailsDescription").innerText = e.description;
+            document.getElementById("eventDetailsCategory").innerText = e.category;
+            document.getElementById("eventDetailsOrganizer").innerText = e.organizer.name;
+            document.getElementById("eventDetailsParticipants").innerText = e.participantCount;
+
+            const img = document.getElementById("eventDetailsImage");
+            if (e.image) {
+                img.src = e.image;
+                img.style.display = "block";
+            } else {
+                img.style.display = "none";
+            }
+
+            const user = JSON.parse(localStorage.getItem("userData"));
+            const registered = true
+
+            document.getElementById("joinEventBtn").style.display = registered ? "none" : "inline-block";
+            document.getElementById("leaveEventBtn").style.display = registered ? "inline-block" : "none";
+
+            document.getElementById("eventDetailsModal").classList.add("active");
+
+        } catch (error) {
+            alert("Erreur : " + error.message);
+        }
+    }
+
+    function renderEvents(filter = "all") {
+        const grid = document.getElementById("eventsGrid");
+        const empty = document.getElementById("emptyState");
+        const count = document.getElementById("eventsCount");
+
+        let events = loadedEvents.map(e => ({
+            ...e,
+            status: getEventStatus(e.date)
+        }));
+
+        if (filter !== "all") {
+            events = events.filter(e => e.status === filter);
+        }
+
+        if (events.length === 0) {
+            grid.style.display = "none";
+            empty.style.display = "block";
+            count.textContent = "0 événement";
+            return;
+        }
+    
+
+        empty.style.display = "none";
+        grid.style.display = "grid";
+
+        count.textContent = `${events.length} événement${events.length > 1 ? "s" : ""}`;
+
+        grid.innerHTML = events.map(event => {
+            const statusClass = event.status === "upcoming" ? "status-upcoming" : "status-completed";
+            const statusText = event.status === "upcoming" ? "À venir" : "Terminé";
+
+            return `
+                <div class="event-card">
+                    <div class="event-image">
+                        <i class="fas fa-calendar"></i>
+                    </div>
+
+                    <div class="event-content">
+                        <span class="event-date">${new Date(event.date).toLocaleDateString("fr-FR")}</span>
+                        <h4 class="event-title">${event.name}</h4>
+
+                        <div class="event-footer">
+                            <div class="event-participants">
+                                <i class="fas fa-users"></i> ${event.participant_count} inscrits
+                            </div>
+                            <span class="event-status ${statusClass}">${statusText}</span>
+                        </div>
+
+                        <div class="event-actions">
+                            <button class="btn-action btn-view" onclick="viewEvent(${event.id})">
+                                <i class="fas fa-eye"></i> Voir
+                            </button>
+
+                            ${event.status === "completed" ? "" : `
+                                <button class="btn-action btn-cancel" onclick="cancelRegistration(${event.id})">
+                                    <i class="fas fa-times"></i> Se désinscrire
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    async function cancelRegistration(eventId) {
+        const token = localStorage.getItem("authToken");
+
+        if (!confirm("Voulez-vous vraiment vous désinscrire ?")) return;
+
+        const res = await fetch(`${API_BASE}/events/${eventId}/unregister`, {
+            method: "DELETE",
+            headers: { "Authorization": "Bearer " + token },
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            loadedEvents = loadedEvents.filter(e => e.id !== eventId);
+            renderEvents(currentFilter);
+        } else {
+            alert("Erreur : " + data.error);
+        }
+    }
+
+    function filterEvents(filter) {
+        currentFilter = filter;
+
+        document.querySelectorAll(".filter-tab").forEach(btn => btn.classList.remove("active"));
+        event.target.closest(".filter-tab").classList.add("active");
+
+        renderEvents(filter);
+    }
+    loadUserEvents();
+
+    function updateUserInfo() {
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            if (userData) {
+                document.getElementById('userName').textContent = `${userData.firstName} ${userData.lastName}`;
+                
+                const roleLabels = {
+                    'user': 'Utilisateur',
+                    'organisateur': 'Organisateur',
+                    'admin': 'Administrateur'
+                };
+                document.getElementById('userRole').textContent = roleLabels[userData.role] || userData.role;
+                
+                const initials = userData.firstName.charAt(0) + userData.lastName.charAt(0);
+                document.querySelector('.user-avatar').textContent = initials.toUpperCase();
+            }
+    }
+
+    function updateSidebarPermissions() {
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            
+            if (!userData) {
+                logout();
+                return;
+            }
+
+            const userRole = userData.role;
+            const allNavSections = document.querySelectorAll('.nav-section-title');
+            
+            allNavSections.forEach(section => {
+                const sectionTitle = section.textContent.trim();
+                
+                if (sectionTitle === 'Organisateur') {
+                    if (userRole !== 'organisateur' && userRole !== 'admin') {
+                        section.style.display = 'none';
+                        if (section.previousElementSibling?.classList.contains('nav-divider')) {
+                            section.previousElementSibling.style.display = 'none';
+                        }
+                        let nextElement = section.nextElementSibling;
+                        while (nextElement && !nextElement.classList.contains('nav-divider')) {
+                            if (nextElement.classList.contains('nav-item')) {
+                                nextElement.style.display = 'none';
+                            }
+                            nextElement = nextElement.nextElementSibling;
+                        }
+                    }
+                }
+                
+                if (sectionTitle === 'Administration') {
+                    if (userRole !== 'admin') {
+                        section.style.display = 'none';
+                        if (section.previousElementSibling?.classList.contains('nav-divider')) {
+                            section.previousElementSibling.style.display = 'none';
+                        }
+                        let nextElement = section.nextElementSibling;
+                        while (nextElement) {
+                            if (nextElement.classList.contains('nav-item')) {
+                                nextElement.style.display = 'none';
+                            }
+                            nextElement = nextElement.nextElementSibling;
+                        }
+                    }
+                }
+            });
+        }
+
+
+    function logout() {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userData');
+        window.location.href = '../login/login.html';
+    }
+
+    if (localStorage.getItem("authToken") == null) {
+        logout();
+    } else {
+        updateUserInfo();
+        updateSidebarPermissions();
+        loadUserEvents();
+     }
+
+</script>
+
+</body>
+</html>

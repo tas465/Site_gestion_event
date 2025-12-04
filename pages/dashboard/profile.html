@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Mon Profil - EventHub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #212529;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h2 {
+            font-size: 1.8rem;
+            color: #212529;
+            margin-bottom: 0.3rem;
+        }
+
+        .header p {
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+
+        .btn-back {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            color: #fff;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .profile-sidebar {
+            height: fit-content;
+        }
+
+        .avatar-section {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 600;
+            font-size: 3rem;
+            margin: 0 auto 1rem;
+        }
+
+        .profile-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
+            color: #8b5cf6;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .info-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(139, 92, 246, 0.05);
+            border-radius: 10px;
+        }
+
+        .info-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #8b5cf6;
+            font-size: 1.1rem;
+        }
+
+        .info-content {
+            flex: 1;
+        }
+
+        .info-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 0.2rem;
+        }
+
+        .info-value {
+            font-size: 0.95rem;
+            color: #212529;
+            font-weight: 500;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            color: #212529;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            font-size: 0.9rem;
+            color: #495057;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            padding: 0.9rem 1.2rem;
+            border: 2px solid rgba(139, 92, 246, 0.2);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            background: #fff;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .form-input:disabled {
+            background: #f8f9fa;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 0.9rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: #495057;
+            border: 2px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .alert {
+            padding: 1rem 1.2rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            display: none;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .alert.show {
+            display: flex;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .spinner {
+            border: 3px solid rgba(139, 92, 246, 0.2);
+            border-top: 3px solid #8b5cf6;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 1024px) {
+            body {
+                padding: 1rem;
+            }
+
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h2>Mon Profil</h2>
+                <p>Gérez vos informations personnelles</p>
+            </div>
+            <a href="../dashboard/dashboard.html" class="btn-back">
+                <i class="fa-solid fa-arrow-left"></i>
+                Retour au dashboard
+            </a>
+        </div>
+
+        <div id="loadingSection" class="card loading">
+            <div class="spinner"></div>
+            <p style="color: #6c757d;">Chargement de votre profil...</p>
+        </div>
+
+        <div id="profileSection" class="profile-grid" style="display: none;">
+            <!-- Sidebar -->
+            <div class="profile-sidebar card">
+                <div class="avatar-section">
+                    <div class="avatar" id="avatar">JD</div>
+                    <h3 class="profile-name" id="fullName">Jean Dupont</h3>
+                    <span class="profile-badge" id="roleBadge">Utilisateur</span>
+                </div>
+
+                <div class="info-list">
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fa-solid fa-envelope"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Email</div>
+                            <div class="info-value" id="displayEmail">-</div>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fa-solid fa-phone"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Téléphone</div>
+                            <div class="info-value" id="displayPhone">-</div>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Université</div>
+                            <div class="info-value" id="displayUniversity">-</div>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fa-solid fa-calendar"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Membre depuis</div>
+                            <div class="info-value" id="displayMemberSince">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div>
+                <!-- Formulaire informations personnelles -->
+                <div class="card" style="margin-bottom: 2rem;">
+                    <h3 class="section-title">Informations personnelles</h3>
+
+                    <div class="alert alert-success" id="successAlert">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span id="successMessage">Mise Ã  jour réussie!</span>
+                    </div>
+
+                    <div class="alert alert-error" id="errorAlert">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span id="errorMessage">Une erreur est survenue</span>
+                    </div>
+
+                    <form id="profileForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Prénom *</label>
+                                <input type="text" class="form-input" id="firstName" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Nom *</label>
+                                <input type="text" class="form-input" id="lastName" required>
+                            </div>
+
+                            <div class="form-group full">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-input" id="email" disabled>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Téléphone *</label>
+                                <input type="tel" class="form-input" id="phone" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Université *</label>
+                                <input type="text" class="form-input" id="university" required>
+                            </div>
+
+                            <div class="form-group full">
+                                <label class="form-label">URL Photo de profil</label>
+                                <input type="url" class="form-input" id="profilePicture" placeholder="https://exemple.com/photo.jpg">
+                            </div>
+                        </div>
+
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                                <i class="fa-solid fa-rotate-left"></i>
+                                Annuler
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-floppy-disk"></i>
+                                Enregistrer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Formulaire mot de passe -->
+                <div class="card">
+                    <h3 class="section-title">Modifier le mot de passe</h3>
+
+                    <form id="passwordForm">
+                        <div class="form-grid">
+                            <div class="form-group full">
+                                <label class="form-label">Mot de passe actuel *</label>
+                                <input type="password" class="form-input" id="currentPassword" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Nouveau mot de passe *</label>
+                                <input type="password" class="form-input" id="newPassword" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Confirmer le mot de passe *</label>
+                                <input type="password" class="form-input" id="confirmPassword" required>
+                            </div>
+                        </div>
+
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-key"></i>
+                                Changer le mot de passe
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let originalData = {};
+
+        async function loadProfile() {
+            try {
+                const token = localStorage.getItem('authToken');
+                
+                if (!token) {
+                    window.location.href = '../login/login.html';
+                    return;
+                }
+
+                const response = await fetch(`${API_URL}/user/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        localStorage.clear();
+                        window.location.href = '../login/login.html';
+                        return;
+                    }
+                    throw new Error('Erreur de chargement');
+                }
+
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    originalData = result.data;
+                    displayProfile(result.data);
+                    
+                    document.getElementById('loadingSection').style.display = 'none';
+                    document.getElementById('profileSection').style.display = 'grid';
+                } else {
+                    throw new Error('Données invalides');
+                }
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                showAlert('error', 'Impossible de charger le profil');
+                setTimeout(() => {
+                    window.location.href = './dashboard.html';
+                }, 2000);
+            }
+        }
+
+        function displayProfile(data) {
+            const initials = (data.firstName?.charAt(0) || '') + (data.lastName?.charAt(0) || '');
+            document.getElementById('avatar').textContent = initials.toUpperCase();
+            document.getElementById('fullName').textContent = `${data.firstName} ${data.lastName}`;
+            
+            const role = data.role?.charAt(0).toUpperCase() + data.role?.slice(1) || 'Utilisateur';
+            document.getElementById('roleBadge').textContent = role;
+            
+            document.getElementById('displayEmail').textContent = data.email || '-';
+            document.getElementById('displayPhone').textContent = data.phone || '-';
+            document.getElementById('displayUniversity').textContent = data.school || '-';
+            
+            if (data.createdAt) {
+                const date = new Date(data.createdAt);
+                document.getElementById('displayMemberSince').textContent = date.toLocaleDateString('fr-FR', { 
+                    year: 'numeric', 
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+
+            document.getElementById('firstName').value = data.firstName || '';
+            document.getElementById('lastName').value = data.lastName || '';
+            document.getElementById('email').value = data.email || '';
+            document.getElementById('phone').value = data.phone || '';
+            document.getElementById('university').value = data.school || '';
+            document.getElementById('profilePicture').value = data.profile_picture_url || '';
+        }
+
+        function resetForm() {
+            displayProfile(originalData);
+            hideAlerts();
+        }
+
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideAlerts();
+
+            const data = {
+                firstName: document.getElementById('firstName').value.trim(),
+                lastName: document.getElementById('lastName').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                school: document.getElementById('university').value.trim(),
+                profile_picture_url: document.getElementById('profilePicture').value.trim() || null
+            };
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_URL}/user/profile`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showAlert('success', 'Profil mis Ã  jour avec succÃ¨s!');
+                    
+                    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                    userData.firstName = data.firstName;
+                    userData.lastName = data.lastName;
+                    localStorage.setItem('userData', JSON.stringify(userData));
+                    
+                    await loadProfile();
+                } else {
+                    showAlert('error', result.message || 'Erreur lors de la mise Ã  jour');
+                }
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                showAlert('error', 'Erreur réseau. Vérifiez votre connexion.');
+            }
+        });
+
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideAlerts();
+
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (newPassword !== confirmPassword) {
+                showAlert('error', 'Les mots de passe ne correspondent pas');
+                return;
+            }
+
+            if (newPassword.length < 8) {
+                showAlert('error', 'Le mot de passe doit contenir au moins 8 caractÃ¨res');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_URL}/user/password`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        currentPassword,
+                        newPassword
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showAlert('success', 'Mot de passe modifié avec succÃ¨s!');
+                    document.getElementById('passwordForm').reset();
+                } else {
+                    showAlert('error', result.message || 'Erreur lors du changement');
+                }
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                showAlert('error', 'Erreur réseau. Vérifiez votre connexion.');
+            }
+        });
+
+        function showAlert(type, message) {
+            hideAlerts();
+            const alertId = type === 'success' ? 'successAlert' : 'errorAlert';
+            const messageId = type === 'success' ? 'successMessage' : 'errorMessage';
+            
+            document.getElementById(messageId).textContent = message;
+            document.getElementById(alertId).classList.add('show');
+
+            setTimeout(() => hideAlerts(), 5000);
+        }
+
+        function hideAlerts() {
+            document.getElementById('successAlert').classList.remove('show');
+            document.getElementById('errorAlert').classList.remove('show');
+        }
+
+        window.addEventListener('DOMContentLoaded', loadProfile);
+    </script>

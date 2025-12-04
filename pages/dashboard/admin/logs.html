@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Logs d'Activité - EventHub Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #212529;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(139, 92, 246, 0.2);
+            padding: 2rem 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 0 1.5rem 2rem;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.3rem;
+        }
+
+        .logo p {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        .nav-menu {
+            margin-top: 2rem;
+            padding: 0 1rem;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            justify-content: space-between;
+        }
+
+        .logout-container {
+            padding: 1rem;
+        }
+
+        .logout-item {
+            background: #fee2e2;
+            color: #b91c1c;
+            font-weight: 600;
+        }
+
+        .logout-item:hover {
+            background: #fecaca;
+            color: #7f1d1d;
+            transform: translateX(5px);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.2rem;
+            margin-bottom: 0.5rem;
+            border-radius: 12px;
+            color: #495057;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .nav-item-icon {
+            font-size: 1.3rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: rgba(139, 92, 246, 0.1);
+            margin: 1.5rem 1rem;
+        }
+
+        .nav-section-title {
+            padding: 0 1.2rem;
+            color: #6c757d;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .header-title h2 {
+            font-size: 1.8rem;
+            color: #212529;
+            margin-bottom: 0.3rem;
+        }
+
+        .header-title p {
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.15);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #8b5cf6;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .filters-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .filter-input, .filter-select {
+            padding: 0.8rem;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .filter-input:focus, .filter-select:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .filter-tab {
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            background: #fff;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .filter-tab:hover {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+        }
+
+        .filter-tab.active {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        .logs-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .log-item {
+            padding: 1.2rem;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+            transition: all 0.2s;
+        }
+
+        .log-item:hover {
+            background: rgba(139, 92, 246, 0.03);
+        }
+
+        .log-item:last-child {
+            border-bottom: none;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .log-type {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .log-type-auth {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .log-type-event {
+            background: rgba(168, 85, 247, 0.1);
+            color: #a855f7;
+        }
+
+        .log-type-user {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+
+        .log-type-admin {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .log-time {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        .log-description {
+            color: #212529;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .log-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        .log-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            z-index: 1001;
+            background: #fff;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            font-size: 1.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .btn-cleanup {
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+
+        .btn-cleanup:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        @media (max-width: 1024px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 5rem 1.5rem 1.5rem;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleSidebar()">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <h1>EventHub</h1>
+                <p>Administration</p>
+            </div>
+        </div>
+
+        <div class="nav-menu">
+            <a href="../dashboard.html" class="nav-item">
+                <span class="nav-item-icon"><i class="fa-solid fa-chart-column"></i></span>
+                <span>Dashboard</span>
+            </a>
+            <a href="../events.html" class="nav-item">
+                <span class="nav-item-icon"><i class="fa-solid fa-calendar-days"></i></span>
+                <span>Événements</span>
+            </a>
+            <a href="../myevents.html" class="nav-item">
+                <span class="nav-item-icon"><i class="fa-solid fa-calendar"></i></span>
+                <span>Mes événements</span>
+            </a>
+            <a href="../profile.html" class="nav-item">
+                <span class="nav-item-icon"><i class="fa-solid fa-user"></i></span>
+                <span>Mon profil</span>
+            </a>
+
+            <div class="nav-divider"></div>
+            <div class="nav-section-title">Organisateur</div>
+
+            <a href="../events.html" class="nav-item">
+                <span class="nav-item-icon"><i class="fa-solid fa-plus"></i></span>
+                <span>Créer un événement</span>
+            </a>
+
+            <div class="nav-divider"></div>
+            <div class="nav-section-title">Administration</div>
+
+            <a href="./users.html" class="nav-item">
+                <span class="nav-item-icon"><i class="fa-solid fa-users"></i></span>
+                <span>Utilisateurs</span>
+            </a>
+            <a href="./logs.html" class="nav-item active">
+                <span class="nav-item-icon"><i class="fa-solid fa-clipboard-list"></i></span>
+                <span>Logs</span>
+            </a>
+        </div>
+
+        <div class="logout-container" onclick="logout()">
+            <a href="" class="nav-item logout-item">
+                <span class="nav-item-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
+                <span>Se déconnecter</span>
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <header class="header">
+            <div class="header-title">
+                <h2>Logs d'Activité</h2>
+                <p>Consultez l'historique des actions sur la plateforme</p>
+            </div>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalLogs">-</div>
+                <div class="stat-label">Total des Logs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="todayLogs">-</div>
+                <div class="stat-label">Aujourd'hui</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="weekLogs">-</div>
+                <div class="stat-label">Cette Semaine</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="authLogs">-</div>
+                <div class="stat-label">Authentifications</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="eventLogs">-</div>
+                <div class="stat-label">Événements</div>
+            </div>
+        </div>
+
+        <div class="filters-section">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label>Rechercher</label>
+                    <input type="text" class="filter-input" placeholder="Description, utilisateur..." id="searchInput">
+                </div>
+                <div class="filter-group">
+                    <label>Date de début</label>
+                    <input type="date" class="filter-input" id="dateFromInput">
+                </div>
+                <div class="filter-group">
+                    <label>Date de fin</label>
+                    <input type="date" class="filter-input" id="dateToInput">
+                </div>
+            </div>
+
+            <div class="filter-tabs">
+                <button class="filter-tab active" onclick="filterByType('')">
+                    <i class="fa-solid fa-list"></i> Tous
+                </button>
+                <button class="filter-tab" onclick="filterByType('auth')">
+                    <i class="fa-solid fa-key"></i> Authentification
+                </button>
+                <button class="filter-tab" onclick="filterByType('event')">
+                    <i class="fa-solid fa-calendar"></i> Événements
+                </button>
+                <button class="filter-tab" onclick="filterByType('user')">
+                    <i class="fa-solid fa-user"></i> Utilisateurs
+                </button>
+                <button class="filter-tab" onclick="filterByType('admin')">
+                    <i class="fa-solid fa-shield"></i> Administration
+                </button>
+            </div>
+
+            <button class="btn-cleanup" onclick="cleanupOldLogs()">
+                <i class="fa-solid fa-broom"></i> Nettoyer les anciens logs (90+ jours)
+            </button>
+        </div>
+
+        <div class="logs-container">
+            <div id="logsContent">
+                <div class="empty-state">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <p>Chargement des logs...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let currentFilter = '';
+
+        function getAuthToken() {
+            return localStorage.getItem('authToken');
+        }
+
+        function checkAdminAccess() {
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            if (!userData || userData.role !== 'admin') {
+                alert('Accès réservé aux administrateurs');
+                window.location.href = '../.html';
+                return false;
+            }
+            return true;
+        }
+
+        async function loadStats() {
+            try {
+                const token = getAuthToken();
+                const response = await fetch(`${API_URL}/admin/logs/stats`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('totalLogs').textContent = data.stats.total_logs.toLocaleString();
+                    document.getElementById('todayLogs').textContent = data.stats.today_logs.toLocaleString();
+                    document.getElementById('weekLogs').textContent = data.stats.week_logs.toLocaleString();
+                    document.getElementById('authLogs').textContent = data.stats.auth_logs.toLocaleString();
+                    document.getElementById('eventLogs').textContent = data.stats.event_logs.toLocaleString();
+                }
+            } catch (error) {
+                console.error('Erreur chargement stats:', error);
+            }
+        }
+
+        async function loadLogs() {
+            try {
+                const token = getAuthToken();
+                const search = document.getElementById('searchInput').value;
+                const dateFrom = document.getElementById('dateFromInput').value;
+                const dateTo = document.getElementById('dateToInput').value;
+
+                const params = new URLSearchParams();
+                if (currentFilter) params.append('action_type', currentFilter);
+                if (search) params.append('search', search);
+                if (dateFrom) params.append('date_from', dateFrom);
+                if (dateTo) params.append('date_to', dateTo);
+                params.append('limit', 100);
+
+                const response = await fetch(`${API_URL}/admin/logs?${params}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.error);
+                }
+
+                displayLogs(data.logs);
+            } catch (error) {
+                console.error('Erreur chargement logs:', error);
+                document.getElementById('logsContent').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <h3>Erreur de chargement</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayLogs(logs) {
+            const container = document.getElementById('logsContent');
+
+            if (logs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-inbox"></i>
+                        <h3>Aucun log trouvé</h3>
+                        <p>Aucune activité ne correspond aux filtres sélectionnés</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = logs.map(log => {
+                const typeClass = `log-type-${log.action_type}`;
+                const typeIcon = {
+                    'auth': 'fa-key',
+                    'event': 'fa-calendar',
+                    'user': 'fa-user',
+                    'admin': 'fa-shield'
+                }[log.action_type] || 'fa-circle-info';
+
+                const typeLabel = {
+                    'auth': 'Authentification',
+                    'event': 'Événement',
+                    'user': 'Utilisateur',
+                    'admin': 'Administration'
+                }[log.action_type] || log.action_type;
+
+                const date = new Date(log.created_at);
+                const formattedDate = date.toLocaleDateString('fr-FR', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const userName = log.first_name && log.last_name 
+                    ? `${log.first_name} ${log.last_name}` 
+                    : 'Utilisateur supprimé';
+
+                return `
+                    <div class="log-item">
+                        <div class="log-header">
+                            <span class="log-type ${typeClass}">
+                                <i class="fa-solid ${typeIcon}"></i>
+                                ${typeLabel}
+                            </span>
+                            <span class="log-time">
+                                <i class="fa-solid fa-clock"></i> ${formattedDate}
+                            </span>
+                        </div>
+                        <div class="log-description">${log.description}</div>
+                        <div class="log-meta">
+                            <span class="log-meta-item">
+                                <i class="fa-solid fa-user"></i>
+                                ${userName} (${log.email || 'N/A'})
+                            </span>
+                            ${log.ip_address ? `
+                                <span class="log-meta-item">
+                                    <i class="fa-solid fa-globe"></i>
+                                    ${log.ip_address}
+                                </span>
+                            ` : ''}
+                            ${log.target_id ? `
+                                <span class="log-meta-item">
+                                    <i class="fa-solid fa-hashtag"></i>
+                                    ${log.target_type} #${log.target_id}
+                                </span>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterByType(type) {
+            currentFilter = type;
+            
+            document.querySelectorAll('.filter-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.filter-tab').classList.add('active');
+
+            loadLogs();
+        }
+
+        async function cleanupOldLogs() {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer tous les logs de plus de 90 jours ?')) {
+                return;
+            }
+
+            try {
+                const token = getAuthToken();
+                const response = await fetch(`${API_URL}/admin/logs/cleanup?days=90`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.error);
+                }
+
+                alert(data.message);
+                loadStats();
+                loadLogs();
+            } catch (error) {
+                alert('Erreur: ' + error.message);
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        document.getElementById('searchInput').addEventListener('input', debounce(loadLogs, 500));
+        document.getElementById('dateFromInput').addEventListener('change', loadLogs);
+        document.getElementById('dateToInput').addEventListener('change', loadLogs);
+
+        if (checkAdminAccess()) {
+            loadStats();
+            loadLogs();
+        }
+    </script>
+</body>
+</html>
