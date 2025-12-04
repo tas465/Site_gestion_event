@@ -32,8 +32,9 @@ jobs:
       DB_PORT: 3306
       NODE_ENV: test
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      # ATTENTION : pas de Markdown ici, juste une chaîne normale
       ALLOWED_ORIGINS: http://localhost:3000,https://site-gestion-event.vercel.app,http://localhost:5500
-      
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -49,18 +50,12 @@ jobs:
         run: npm ci
 
       - name: Wait for MySQL
-        working-directory: ./backend
         run: |
           for i in `seq 1 30`; do
             (echo "select 1" | mysql -h 127.0.0.1 -uroot -proot eventhub) && break
             echo "MySQL not ready yet..."
             sleep 2
           done
-
-      - name: Run database migrations (optionnel)
-        working-directory: ./backend
-        run: |
-          echo "TODO: exécuter vos scripts SQL ou migrations ici"
 
       - name: Run security tests
         working-directory: ./backend
