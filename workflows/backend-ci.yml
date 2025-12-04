@@ -1,0 +1,78 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: eventhub
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      DB_HOST: 127.0.0.1
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: eventhub
+      DB_PORT: 3306       # si ton code lit ce port, c'est propre
+      NODE_ENV: test
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      ALLOWED_ORIGINS: http://localhost:3000
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Use backend directory
+        working-directory: ./backend
+        run: echo "Working in backend folder"
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Wait for MySQL
+        working-directory: ./backend
+        run: |
+          for i in `seq 1 30`; do
+            (echo "select 1" | mysql -h 127.0.0.1 -uroot -proot eventhub) && break
+            echo "MySQL not ready yet..."
+            sleep 2
+          done
+
+      - name: Run database migrations (optionnel)
+        working-directory: ./backend
+        run: |
+          echo "TODO: exécuter vos scripts SQL ou migrations ici"
+
+      - name: Run security tests
+        working-directory: ./backend
+        run: npm run test:security
+
+      - name: Start app (smoke test optionnel)
+        working-directory: ./backend
+        run: |
+          npm start &
+          sleep 5
+          curl -f http://localhost:3000/api/health
